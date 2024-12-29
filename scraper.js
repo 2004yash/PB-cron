@@ -13,12 +13,15 @@ const scrapeRankData = async () => {
 
     const browser = await puppeteer.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: true,
+      headless: true, // Keep this true for production
     });
     const page = await browser.newPage();
 
-    await page.goto(url, { waitUntil: "networkidle2" });
-    await page.waitForSelector("#contest-rank-table tbody");
+    await page.goto(url, { waitUntil: "domcontentloaded" }); // Ensures the DOM is loaded
+    await page.waitForTimeout(5000); // Additional wait for AJAX content
+
+    // Check if rank table is fully loaded
+    await page.waitForSelector("#contest-rank-table tbody tr");
 
     const rankData = await page.evaluate(() => {
       const rows = Array.from(
